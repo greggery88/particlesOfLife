@@ -4,8 +4,8 @@ import random as rd
 import logging
 
 coefficient_of_force = 1
-radius_for_force = 10
-number_of_colors = 3
+radius_for_force = 15
+number_of_colors = 2
 number_particles = 1000
 
 log = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ def make_matrix(nc):
     # for _ in range(nc):
     # matrix.append([rd.uniform(1, -1) for _ in range(nc)])
     # print(matrix)
-    matrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    matrix = [[-1, 1], [-1, 1]]
 
     return matrix
 

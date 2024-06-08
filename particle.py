@@ -1,6 +1,7 @@
 import pygame as pyg
 import random as rd
 from pygame import Vector2
+from pygame.math import clamp
 
 
 # particle Global
@@ -34,7 +35,9 @@ class Particle:
 
     def update_velocity(self, coefficient_of_force, particles, radius):
 
-        # need halflife
+        # lowers velocity with half lfe
+
+        self.velocity -= self.velocity / 1.01
 
         # find the force applied to the particle
 
@@ -131,42 +134,34 @@ class Particle:
                 vector = particle.position - self.position
                 r = vector.magnitude()
 
-                # calc raw force
-
-                force = _force_calculator(vector, coefficient, r)
-
-                # check the particle is not to close to mes things up.
-
-                if r > 2.179:
-
-                    # scaler force for color.
-
-                    scaler = self._scaler_matrix(particle.color)
-                    force = force * scaler
+                # calc force
+                scaler = self._scaler_matrix(particle.color)
+                force = _force_calculator(vector, coefficient, r, scaler)
 
                 resulting_force_list.append(force)
 
         for pyg.Vector2 in resulting_force_list:
-
             resulting_force = resulting_force + pyg.Vector2
         return resulting_force
 
 
-def _force_calculator(vector, coefficient, radius):
-
+def _force_calculator(vector, coefficient, radius, scaler):
+    a = 0.5
     # check if the particle is in another particle if so return a random low force.
 
-    if vector.magnitude() == 0:
+    if radius == 0:
         force = Vector2(rd.uniform(-0.001, 0.001), rd.uniform(-0.001, 0.001))
         return force
 
     # defines radius scaler and sets its value.
 
     rs = float
-    if radius < 3.326:
-        rs = -10 * (radius - 2.8864) ** 2 + 5
-    elif radius >= 3.326:
-        rs = 1 / (radius - 3)
+    if radius < 2:
+        rs = radius * a - 2 * a
+    elif 2 <= radius < 6:
+        rs = 0.5 * radius * scaler * a - scaler * a
+    else:
+        rs = 0.5 * scaler * 15 * a - 0.5 * radius * scaler * a
 
     # calculates and returns force for non 0 vectors
 
