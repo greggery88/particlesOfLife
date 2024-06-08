@@ -24,7 +24,6 @@ def make_matrix(nc):
 def main():
     logging.basicConfig(level=logging.INFO)
     clock = pyg.time.Clock()
-    matrix = []
     matrix = make_matrix(number_of_colors)
 
     particles = [

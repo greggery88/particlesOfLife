@@ -1,7 +1,6 @@
 import pygame as pyg
 import random as rd
 from pygame import Vector2
-from pygame.math import clamp
 
 
 # particle Global
