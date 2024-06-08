@@ -16,7 +16,7 @@ def make_matrix(nc):
     for _ in range(nc):
         matrix.append([rd.uniform(1, -1) for _ in range(nc)])
         print(matrix)
-    # matrix = [[1, 0.5, 0], [0, 1, 0.5], [0.5, 0, 1]]
+    matrix = [[0.7, 0.5, -0.5], [-0.5, 0.7, 0.5], [0.5, -0.5, 0.7]]
 
     return matrix
 
