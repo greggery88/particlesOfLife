@@ -34,6 +34,8 @@ class Particle:
 
     def update_velocity(self, coefficient_of_force, particles, radius):
 
+        # need halflife
+
         # find the force applied to the particle
 
         self.applied_force = self.resulting_calculated_forces(

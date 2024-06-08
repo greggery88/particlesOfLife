@@ -3,8 +3,8 @@ import particle as ptc
 import random as rd
 import logging
 
-coefficient_of_force = 100
-radius_for_force = 30
+coefficient_of_force = 1
+radius_for_force = 10
 number_of_colors = 3
 number_particles = 1000
 
