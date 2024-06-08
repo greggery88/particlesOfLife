@@ -2,6 +2,7 @@ import pygame as pyg
 import random as rd
 from pygame import Vector2
 
+
 # particle Global
 red = (255, 0, 0)
 blue = (0, 0, 255)
@@ -9,36 +10,50 @@ green = (0, 255, 0)
 
 
 class Particle:
+
     def __init__(self, number_of_colors, x, y, matrix):
-        # initializing the position, velocity, mass
+
+        # initializing the particles properties and self values
+
+        # movement and position properties
+
         self.velocity = Vector2(0, 0)
         self.position = Vector2(x, y)
-        self.radius = 1
-        self.half_life = 10
         self.applied_force = Vector2(0, 0)
-        # color
+
+        # view properties
+
+        self.radius = 2
         self.color = _color(number_of_colors)
         self.cn = number_of_colors
+
+        # advanced movement properties
+
+        self.half_life = 10
         self.matrix = matrix
 
-    def update(self, coefficient_of_force, particles, radius):
+    def update_velocity(self, coefficient_of_force, particles, radius):
+
+        # find the force applied to the particle
+
         self.applied_force = self.resulting_calculated_forces(
             self.find_nearby_particles(particles, radius), coefficient_of_force
         )
-        self.velocity = self.applied_force  # + self.velocity
+
+        # works out the new velocity from the applied force
+
+        self.velocity = self.applied_force + self.velocity
+
+    def update_position(self):
+
+        # Updates the particle's position
+
         self.position = self.position + self.velocity
-        if (
-            self.velocity != 0
-            and abs(
-                self.velocity.magnitude()
-                - ((3 * self.velocity) / (2 * self.half_life)).magnitude()
-            )
-            < self.velocity.magnitude()
-        ):
-            # self.velocity = self.velocity - (3 * self.velocity) / (2 * self.half_life)
-            pass
 
     def draw(self, scr):
+
+        # draws the particle
+
         pyg.draw.circle(
             scr,
             self.color,
@@ -47,32 +62,23 @@ class Particle:
         )
 
     def find_nearby_particles(self, particles, thresh_hold_radius):
+
+        # creates the list of nearby particles
+
         nearby_pt = []
-        to_close_pt = []
-        in_radius_pt = []
+
+        # adds particles to the list if within distance
+
         for particle in particles:
-            distance = (
-                # Vector2.__sub__(particle.position, self.position)
-                particle.position
-                - self.position
-            ).magnitude()
-            if distance < self.radius + 2 and distance != 0:
-                to_close_pt.append(particle)
-            elif (
-                distance < self.radius + 10
-                and distance != 0
-                and self.color != particle.color
-            ):
-                to_close_pt.append(particle)
-            elif distance < thresh_hold_radius and distance != 0:
-                in_radius_pt.append(particle)
-            elif distance == 0 and particle != self:
-                to_close_pt.append(particle)
-        nearby_pt.append(to_close_pt)
-        nearby_pt.append(in_radius_pt)
+
+            distance = self.position.distance_to(particle.position)
+
+            if distance < thresh_hold_radius and particle != self:
+                nearby_pt.append(particle)
+
         return nearby_pt
 
-    def _scaler_matrix(self, nc, ptc):
+    def _scaler_matrix(self, ptc):
         scaler = float
         matrix = self.matrix
         if self.color == red:
@@ -101,58 +107,83 @@ class Particle:
                 scaler = row[2]
         return scaler
 
-    def resulting_calculated_forces(self, nearby_pt, coefficient_force):
+    def resulting_calculated_forces(self, nearby_pt, coefficient):
+
+        # creates  a list to store the force from each particle.
+
         resulting_force_list = []
-        resulting_force = pyg.math.Vector2(0, 0)
-        if len(nearby_pt[0]) == 0 and len(nearby_pt[1]) == 0:
-            resulting_force_list.append(pyg.Vector2(0, 0))
+        resulting_force = Vector2(0, 0)
+
+        # check if there are any nearby particles.
+
+        if len(nearby_pt) == 0:
+            resulting_force_list.append(Vector2(0, 0))
+
         else:
-            # for to_close particles
-            for particle in nearby_pt[0]:
-                vec_self_to_pt = particle.position + self.position
 
-                resulting_force_list.append(
-                    (
-                        _force_calculator(
-                            vec_self_to_pt,
-                            0.01 * coefficient_force,
-                            pyg.math.Vector2.magnitude(particle.position),
-                        )
-                    )
-                )
+            # loop for all nearby particles to find there in fluence then appending them on to a list.
 
-            # for particles in radius
-            for particle in nearby_pt[1]:
-                scaler = self._scaler_matrix(self.cn, particle.color)
-                vec_self_to_pt = particle.position - self.position
-                resulting_force_list.append(
-                    (
-                        scaler
-                        * (
-                            _force_calculator(
-                                vec_self_to_pt,
-                                coefficient_force,
-                                pyg.math.Vector2.magnitude(particle.position),
-                            )
-                        )
-                    )
-                )
-        for Vector2 in resulting_force_list:
-            resulting_force = resulting_force + Vector2
-            return resulting_force
+            for particle in nearby_pt:
+
+                # calcu displacement.
+                vector = particle.position - self.position
+                r = vector.magnitude()
+
+                # calc raw force
+
+                force = _force_calculator(vector, coefficient, r)
+
+                # check the particle is not to close to mes things up.
+
+                if r > 2.179:
+
+                    # scaler force for color.
+
+                    scaler = self._scaler_matrix(particle.color)
+                    force = force * scaler
+
+                resulting_force_list.append(force)
+
+        for pyg.Vector2 in resulting_force_list:
+
+            resulting_force = resulting_force + pyg.Vector2
+        return resulting_force
 
 
 def _force_calculator(vector, coefficient, radius):
-    force = (coefficient * vector) / radius**2
+
+    # check if the particle is in another particle if so return a random low force.
+
+    if vector.magnitude() == 0:
+        force = Vector2(rd.uniform(-0.001, 0.001), rd.uniform(-0.001, 0.001))
+        return force
+
+    # defines radius scaler and sets its value.
+
+    rs = float
+    if radius < 3.326:
+        rs = -10 * (radius - 2.8864) ** 2 + 5
+    elif radius >= 3.326:
+        rs = 1 / (radius - 3)
+
+    # calculates and returns force for non 0 vectors
+
+    force = rs * coefficient * vector.normalize()
     return force
 
 
 def _color(number):
-    if number < 1:
-        number = 1
-    # colors
+
+    # defines what a color is.
+
     color = (int, int, int)
+
+    # randomize the color of the particles
+
     color_number = rd.randint(1, number)
+
+    # sets the color
+
     if color_number == 1:
         color = red
     elif color_number == 2:

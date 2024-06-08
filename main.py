@@ -3,10 +3,10 @@ import particle as ptc
 import random as rd
 import logging
 
-coefficient_of_force = 10000
-radius_for_force = 60
+coefficient_of_force = 100
+radius_for_force = 30
 number_of_colors = 3
-number_particles = 500
+number_particles = 1000
 
 log = logging.getLogger(__name__)
 
@@ -43,16 +43,18 @@ def main():
 
         pyg.Surface.fill(screen, (0, 0, 0))
         for particle in particles:
-            particle.update(coefficient_of_force, particles, radius_for_force)
+            particle.update_velocity(coefficient_of_force, particles, radius_for_force)
+        for particle in particles:
+            particle.update_position()
+        for particle in particles:
             particle.draw(screen)
         clock.tick(60)
         pyg.display.update()
         fps = clock.get_fps()
-        pyg.display.set_caption(clock.get_fps())
+        pyg.display.set_caption("fps = " + "" + str(fps))
 
 
 if __name__ == "__main__":
     pyg.init()
     screen = pyg.display.set_mode((500, 500))
-
     main()
