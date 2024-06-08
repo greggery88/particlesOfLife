@@ -29,7 +29,8 @@ class Particle:
         self.cn = number_of_colors
 
         # advanced movement properties
-
+        self.r_min = 6
+        self.r_max = 30
         self.half_life = 10
         self.matrix = matrix
 
@@ -136,7 +137,7 @@ class Particle:
 
                 # calc force
                 scaler = self._scaler_matrix(particle.color)
-                force = _force_calculator(vector, coefficient, r, scaler)
+                force = self._force_calculator(vector, coefficient, r, scaler)
 
                 resulting_force_list.append(force)
 
@@ -144,29 +145,36 @@ class Particle:
             resulting_force = resulting_force + pyg.Vector2
         return resulting_force
 
+    def _force_calculator(self, vector, coefficient, radius, scaler):
+        # important scaler for the force calculation
+        r_min = self.r_min
+        r_max = self.r_max
+        r_mid = (r_max + r_min) / 2
+        const_a = 1 / r_min
+        const_b = 1 / (r_mid - r_min)
 
-def _force_calculator(vector, coefficient, radius, scaler):
-    a = 0.5
-    # check if the particle is in another particle if so return a random low force.
+        # check if the particle is in another particle if so return a random low force.
 
-    if radius == 0:
-        force = Vector2(rd.uniform(-0.001, 0.001), rd.uniform(-0.001, 0.001))
+        if radius == 0:
+            force = Vector2(rd.uniform(-0.001, 0.001), rd.uniform(-0.001, 0.001))
+            return force
+
+        # defines radius scaler and sets its value.
+
+        rs = float
+        if radius < r_min:
+            rs = const_a * radius - 1
+
+        elif r_min <= radius < r_mid:
+            rs = scaler * const_b * (radius - r_min)
+
+        elif r_mid < radius <= r_max:
+            rs = -scaler * const_b * (radius - r_max)
+
+        # calculates and returns force for non 0 vectors
+
+        force = rs * coefficient * vector.normalize()
         return force
-
-    # defines radius scaler and sets its value.
-
-    rs = float
-    if radius < 2:
-        rs = radius * a - 2 * a
-    elif 2 <= radius < 6:
-        rs = 0.5 * radius * scaler * a - scaler * a
-    else:
-        rs = 0.5 * scaler * 15 * a - 0.5 * radius * scaler * a
-
-    # calculates and returns force for non 0 vectors
-
-    force = rs * coefficient * vector.normalize()
-    return force
 
 
 def _color(number):
